@@ -1,0 +1,63 @@
+.product-assembly-manual {
+    margin-top: 12px;
+}
+
+.product-assembly-manual__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #333;
+    font-weight: 600;
+    line-height: 20px;
+    text-decoration: underline;
+}
+
+.product-assembly-manual__link:hover,
+.product-assembly-manual__link:focus,
+.product-assembly-manual__link:visited {
+    color: #333;
+    text-decoration: underline;
+}
+
+/*
+ * Quita cualquier icono heredado del tema o de reglas anteriores.
+ */
+.product-assembly-manual__link::before,
+.product-assembly-manual__link::after,
+.product-assembly-manual__icon::before,
+.product-assembly-manual__icon::after {
+    content: none !important;
+    display: none !important;
+    background: none !important;
+    border: 0 !important;
+}
+
+/*
+ * Icono PDF único.
+ */
+.product-assembly-manual__icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    flex: 0 0 16px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 0;
+    line-height: 0;
+    color: transparent;
+
+    background-image: url('../images/pdf.svg');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}
+
+.product-assembly-manual__icon::before,
+.product-assembly-manual__icon::after,
+.product-assembly-manual__link::before,
+.product-assembly-manual__link::after {
+    content: none !important;
+    display: none !important;
+}

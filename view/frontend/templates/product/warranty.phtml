@@ -1,0 +1,148 @@
+<?php
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+
+/**
+ * @var \Magento\Catalog\Block\Product\View $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+declare(strict_types=1);
+
+use Magento\Framework\App\ObjectManager;
+use Magento\Framework\UrlInterface;
+use Magento\Store\Model\StoreManagerInterface;
+
+$product = $block->getProduct();
+$outputHelper = $this->helper(\Magento\Catalog\Helper\Output::class);
+
+/*
+ * Información de cuidados.
+ */
+$careValue = trim((string) $product->getData('cuidados'));
+$careHtml = '';
+
+if ($careValue !== '') {
+    $careHtml = $outputHelper->productAttribute(
+        $product,
+        $careValue,
+        'cuidados'
+    );
+}
+
+/*
+ * Información de garantía.
+ */
+$warrantyValue = trim((string) $product->getData('garantia'));
+$warrantyHtml = '';
+
+if ($warrantyValue !== '') {
+    $warrantyHtml = $outputHelper->productAttribute(
+        $product,
+        $warrantyValue,
+        'garantia'
+    );
+}
+
+/*
+ * Manual de armado.
+ *
+ * El atributo debe contener algo como:
+ * product/manuals/d/o/download_6.pdf
+ */
+$manualValue = trim((string) $product->getData('assembly_manual'));
+$manualUrl = '';
+$manualFilename = '';
+
+if ($manualValue !== '') {
+    if (preg_match('#^https?://#i', $manualValue)) {
+        /*
+         * El atributo ya contiene una URL completa.
+         */
+        $manualUrl = $manualValue;
+
+        $manualPath = parse_url($manualValue, PHP_URL_PATH);
+
+        if (is_string($manualPath)) {
+            $manualFilename = basename($manualPath);
+        }
+    } else {
+        /*
+         * Normaliza posibles valores guardados como:
+         *
+         * /product/manuals/manual.pdf
+         * media/product/manuals/manual.pdf
+         * pub/media/product/manuals/manual.pdf
+         */
+        $manualValue = ltrim($manualValue, '/');
+
+        $manualValue = (string) preg_replace(
+            '#^(pub/)?media/#i',
+            '',
+            $manualValue
+        );
+
+        /** @var StoreManagerInterface $storeManager */
+        $storeManager = ObjectManager::getInstance()->get(
+            StoreManagerInterface::class
+        );
+
+        $mediaBaseUrl = rtrim(
+            $storeManager
+                ->getStore()
+                ->getBaseUrl(UrlInterface::URL_TYPE_MEDIA),
+            '/'
+        );
+
+        $manualUrl = $mediaBaseUrl . '/' . $manualValue;
+        $manualFilename = basename($manualValue);
+    }
+}
+?>
+
+<?php if ($careHtml !== ''): ?>
+    <div class="product-info-cuidados info-section">
+        <strong class="attribute-label">
+            <?= $escaper->escapeHtml(__('Cuidados:')) ?>
+        </strong>
+
+        <span class="attribute-value">
+            <?= /* @noEscape */ $careHtml ?>
+        </span>
+    </div>
+<?php endif; ?>
+
+<?php if ($warrantyHtml !== ''): ?>
+    <div class="product-info-garantia info-section">
+        <strong class="attribute-label">
+            <?= $escaper->escapeHtml(__('Garantía:')) ?>
+        </strong>
+
+        <span class="attribute-value">
+            <?= /* @noEscape */ $warrantyHtml ?>
+        </span>
+    </div>
+<?php endif; ?>
+
+<?php if ($manualUrl !== ''): ?>
+    <div class="product-assembly-manual info-section">
+        <a
+            class="product-assembly-manual__link"
+            href="<?= $escaper->escapeUrl($manualUrl) ?>"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="<?= $escaper->escapeHtmlAttr(__('Abrir Manual de armado')) ?>"
+        >
+            <span
+                class="product-assembly-manual__icon"
+                aria-hidden="true"
+            ></span>
+
+            <span class="product-assembly-manual__label">
+                <?= $escaper->escapeHtml(__('Manual de armado')) ?>
+            </span>
+        </a>
+    </div>
+<?php endif; ?>

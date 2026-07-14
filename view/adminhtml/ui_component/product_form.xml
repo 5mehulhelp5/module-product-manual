@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <fieldset name="product-details">
+        <field name="assembly_manual" sortOrder="250" formElement="fileUploader">
+            <settings>
+                <dataType>string</dataType>
+                <label translate="true">Manual de armado</label>
+                <notice translate="true">Solo archivos PDF. Tamaño máximo: 10 MB.</notice>
+                <dataScope>assembly_manual</dataScope>
+                <visible>true</visible>
+            </settings>
+            <formElements>
+                <fileUploader>
+                    <settings>
+                        <allowedExtensions>pdf</allowedExtensions>
+                        <maxFileSize>10485760</maxFileSize>
+                        <uploaderConfig>
+                            <param xsi:type="url" name="url" path="gdmexico_productmanual/manual/upload"/>
+                        </uploaderConfig>
+                    </settings>
+                </fileUploader>
+            </formElements>
+        </field>
+    </fieldset>
+</form>
