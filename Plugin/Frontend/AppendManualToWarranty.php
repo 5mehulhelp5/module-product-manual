@@ -13,10 +13,18 @@ class AppendManualToWarranty
 {
     private const TARGET_BLOCK = 'product.custom.warranty';
 
+    /** @var StoreManagerInterface */
+    private $storeManager;
+
+    /** @var Escaper */
+    private $escaper;
+
     public function __construct(
-        private readonly StoreManagerInterface $storeManager,
-        private readonly Escaper $escaper
+        StoreManagerInterface $storeManager,
+        Escaper $escaper
     ) {
+        $this->storeManager = $storeManager;
+        $this->escaper = $escaper;
     }
 
     public function beforeToHtml(View $subject): void

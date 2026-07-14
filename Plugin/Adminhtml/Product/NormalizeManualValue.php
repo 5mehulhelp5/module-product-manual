@@ -14,12 +14,28 @@ class NormalizeManualValue
 {
     private const ATTRIBUTE_CODE = 'assembly_manual';
 
+    /** @var RequestInterface */
+    private $request;
+
+    /** @var ProductAction */
+    private $productAction;
+
+    /** @var ProductRepositoryInterface */
+    private $productRepository;
+
+    /** @var LoggerInterface */
+    private $logger;
+
     public function __construct(
-        private readonly RequestInterface $request,
-        private readonly ProductAction $productAction,
-        private readonly ProductRepositoryInterface $productRepository,
-        private readonly LoggerInterface $logger
+        RequestInterface $request,
+        ProductAction $productAction,
+        ProductRepositoryInterface $productRepository,
+        LoggerInterface $logger
     ) {
+        $this->request = $request;
+        $this->productAction = $productAction;
+        $this->productRepository = $productRepository;
+        $this->logger = $logger;
     }
 
     /**
@@ -118,7 +134,7 @@ class NormalizeManualValue
     private function findManualValue(
         array $data,
         bool &$wasSubmitted
-    ): mixed {
+    ) {
         if (array_key_exists(self::ATTRIBUTE_CODE, $data)) {
             $wasSubmitted = true;
 
@@ -184,7 +200,7 @@ class NormalizeManualValue
     /**
      * Convierte la respuesta del fileUploader en una ruta string.
      */
-    private function normalizeValue(mixed $value): string
+    private function normalizeValue($value): string
     {
         if (is_string($value)) {
             return $this->sanitizePath($value);

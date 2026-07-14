@@ -10,35 +10,45 @@ use Magento\Framework\Setup\Patch\DataPatchInterface;
 
 class HideAssemblyManualNativeField implements DataPatchInterface
 {
+    /** @var ModuleDataSetupInterface */
+    private $moduleDataSetup;
+
+    /** @var CategorySetupFactory */
+    private $categorySetupFactory;
+
     public function __construct(
-        private readonly ModuleDataSetupInterface $moduleDataSetup,
-        private readonly CategorySetupFactory $categorySetupFactory
+        ModuleDataSetupInterface $moduleDataSetup,
+        CategorySetupFactory $categorySetupFactory
     ) {
+        $this->moduleDataSetup = $moduleDataSetup;
+        $this->categorySetupFactory = $categorySetupFactory;
     }
 
     public function apply(): self
     {
         $this->moduleDataSetup->getConnection()->startSetup();
 
-        $categorySetup = $this->categorySetupFactory->create([
-            'setup' => $this->moduleDataSetup,
-        ]);
+        try {
+            $categorySetup = $this->categorySetupFactory->create([
+                'setup' => $this->moduleDataSetup,
+            ]);
 
-        $attributeId = $categorySetup->getAttributeId(
-            Product::ENTITY,
-            AddAssemblyManualAttribute::ATTRIBUTE_CODE
-        );
-
-        if ($attributeId) {
-            $categorySetup->updateAttribute(
+            $attributeId = $categorySetup->getAttributeId(
                 Product::ENTITY,
-                AddAssemblyManualAttribute::ATTRIBUTE_CODE,
-                'is_visible',
-                0
+                AddAssemblyManualAttribute::ATTRIBUTE_CODE
             );
-        }
 
-        $this->moduleDataSetup->getConnection()->endSetup();
+            if ($attributeId) {
+                $categorySetup->updateAttribute(
+                    Product::ENTITY,
+                    AddAssemblyManualAttribute::ATTRIBUTE_CODE,
+                    'is_visible',
+                    0
+                );
+            }
+        } finally {
+            $this->moduleDataSetup->getConnection()->endSetup();
+        }
 
         return $this;
     }

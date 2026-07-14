@@ -13,12 +13,20 @@ use Magento\Store\Model\StoreManagerInterface;
 
 class Manual extends Template
 {
+    /** @var Registry */
+    private $registry;
+
+    /** @var StoreManagerInterface */
+    private $storeManager;
+
     public function __construct(
         Context $context,
-        private readonly Registry $registry,
-        private readonly StoreManagerInterface $storeManager,
+        Registry $registry,
+        StoreManagerInterface $storeManager,
         array $data = []
     ) {
+        $this->registry = $registry;
+        $this->storeManager = $storeManager;
         parent::__construct($context, $data);
     }
 
@@ -37,7 +45,7 @@ class Manual extends Template
             return null;
         }
 
-        $value = trim((string)$product->getData(AddAssemblyManualAttribute::ATTRIBUTE_CODE));
+        $value = trim((string) $product->getData(AddAssemblyManualAttribute::ATTRIBUTE_CODE));
         if ($value === '') {
             return null;
         }

@@ -16,19 +16,31 @@ use Magento\Store\Model\StoreManagerInterface;
 
 class Upload extends Action
 {
-    public const ADMIN_RESOURCE = 'GDMexico_ProductManual::upload';
+    public const ADMIN_RESOURCE = 'Magento_Catalog::products';
 
     private const UPLOAD_DIR = 'product/manuals';
     private const FIELD_NAME = 'assembly_manual';
     private const NORMALIZED_FIELD_NAME = 'product_manual_upload';
     private const MAX_FILE_SIZE = 10485760;
 
+    /** @var UploaderFactory */
+    private $uploaderFactory;
+
+    /** @var Filesystem */
+    private $filesystem;
+
+    /** @var StoreManagerInterface */
+    private $storeManager;
+
     public function __construct(
         Context $context,
-        private readonly UploaderFactory $uploaderFactory,
-        private readonly Filesystem $filesystem,
-        private readonly StoreManagerInterface $storeManager
+        UploaderFactory $uploaderFactory,
+        Filesystem $filesystem,
+        StoreManagerInterface $storeManager
     ) {
+        $this->uploaderFactory = $uploaderFactory;
+        $this->filesystem = $filesystem;
+        $this->storeManager = $storeManager;
         parent::__construct($context);
     }
 
@@ -226,28 +238,28 @@ class Upload extends Action
     private function getUploadErrorMessage(
         int $errorCode
     ): \Magento\Framework\Phrase {
-        return match ($errorCode) {
-            UPLOAD_ERR_INI_SIZE,
-            UPLOAD_ERR_FORM_SIZE =>
-                __('El archivo excede el tamaño permitido por el servidor.'),
+        switch ($errorCode) {
+            case UPLOAD_ERR_INI_SIZE:
+            case UPLOAD_ERR_FORM_SIZE:
+                return __('El archivo excede el tamaño permitido por el servidor.');
 
-            UPLOAD_ERR_PARTIAL =>
-                __('El archivo se cargó parcialmente. Intenta nuevamente.'),
+            case UPLOAD_ERR_PARTIAL:
+                return __('El archivo se cargó parcialmente. Intenta nuevamente.');
 
-            UPLOAD_ERR_NO_FILE =>
-                __('No se recibió ningún archivo.'),
+            case UPLOAD_ERR_NO_FILE:
+                return __('No se recibió ningún archivo.');
 
-            UPLOAD_ERR_NO_TMP_DIR =>
-                __('No existe el directorio temporal de carga.'),
+            case UPLOAD_ERR_NO_TMP_DIR:
+                return __('No existe el directorio temporal de carga.');
 
-            UPLOAD_ERR_CANT_WRITE =>
-                __('No fue posible escribir el archivo en el servidor.'),
+            case UPLOAD_ERR_CANT_WRITE:
+                return __('No fue posible escribir el archivo en el servidor.');
 
-            UPLOAD_ERR_EXTENSION =>
-                __('Una extensión de PHP detuvo la carga del archivo.'),
+            case UPLOAD_ERR_EXTENSION:
+                return __('Una extensión de PHP detuvo la carga del archivo.');
 
-            default =>
-                __('Ocurrió un error al cargar el archivo.'),
-        };
+            default:
+                return __('Ocurrió un error al cargar el archivo.');
+        }
     }
 }

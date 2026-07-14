@@ -12,10 +12,18 @@ use Magento\Store\Model\StoreManagerInterface;
 
 class PrepareManualData
 {
+    /** @var StoreManagerInterface */
+    private $storeManager;
+
+    /** @var Filesystem */
+    private $filesystem;
+
     public function __construct(
-        private readonly StoreManagerInterface $storeManager,
-        private readonly Filesystem $filesystem
+        StoreManagerInterface $storeManager,
+        Filesystem $filesystem
     ) {
+        $this->storeManager = $storeManager;
+        $this->filesystem = $filesystem;
     }
 
     public function afterGetData(ProductDataProvider $subject, array $data): array
