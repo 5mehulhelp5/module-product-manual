@@ -138,7 +138,7 @@ class AppendManualToWarranty
             '<div class="product-assembly-manual info-section">'
             . '<a class="%s" href="%s" title="%s">'
             . '<span class="product-assembly-manual__icon" aria-hidden="true"></span>'
-            . '<span class="product-assembly-manual__label">%s</span>'
+            . '<span class="product-assembly-manual__label" style="font-weight: 400;color: #000;">%s</span>'
             . '</a>'
             . '</div>',
             self::MANUAL_LINK_CLASS,
