@@ -2,13 +2,12 @@
     "name": "gdmexico/module-product-manual",
     "description": "Magento 2 module to manage Assembly Manual (PDF) files for products.",
     "type": "magento2-module",
-    "version": "1.1.7",
+    "version": "1.1.8",
     "license": [
         "proprietary"
     ],
     "require": {
-        "php": ">=7.4 <9.0",
-        "composer-runtime-api": "^2.0",
+        "php": "^7.4 || ^8.1 || ^8.2 || ^8.3 || ^8.4 || ^8.5",
         "magento/framework": "^103.0",
         "magento/module-catalog": "*",
         "magento/module-backend": "*",

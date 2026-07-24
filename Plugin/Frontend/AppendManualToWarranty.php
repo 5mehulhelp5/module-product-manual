@@ -12,6 +12,7 @@ use GDMexico\ProductManual\Setup\Patch\Data\AddAssemblyManualAttribute;
 use Magento\Catalog\Block\Product\View;
 use Magento\Framework\Escaper;
 use Magento\Framework\UrlInterface;
+use Magento\Store\Model\StoreManagerInterface;
 
 class AppendManualToWarranty
 {
@@ -31,26 +32,23 @@ class AppendManualToWarranty
     private $escaper;
 
     /**
-     * @var UrlInterface
+     * @var StoreManagerInterface
      */
-    private $urlBuilder;
+    private $storeManager;
 
     /**
      * @param Escaper $escaper
-     * @param UrlInterface $urlBuilder
+     * @param StoreManagerInterface $storeManager
      */
     public function __construct(
         Escaper $escaper,
-        UrlInterface $urlBuilder
+        StoreManagerInterface $storeManager
     ) {
         $this->escaper = $escaper;
-        $this->urlBuilder = $urlBuilder;
+        $this->storeManager = $storeManager;
     }
 
     /**
-     * Cambia el título del acordeón únicamente cuando el producto
-     * tiene un manual de armado.
-     *
      * @param View $subject
      * @return void
      */
@@ -83,8 +81,6 @@ class AppendManualToWarranty
     }
 
     /**
-     * Agrega el enlace de descarga del manual al final del bloque.
-     *
      * @param View $subject
      * @param string $result
      * @return string
@@ -97,9 +93,7 @@ class AppendManualToWarranty
             return $result;
         }
 
-        /*
-         * Evita agregar el manual más de una vez.
-         */
+
         if (strpos($result, self::MANUAL_LINK_CLASS) !== false) {
             return $result;
         }
@@ -110,41 +104,33 @@ class AppendManualToWarranty
             return $result;
         }
 
-        $productId = (int) $product->getId();
-
         $manualValue = trim(
             (string) $product->getData(
                 AddAssemblyManualAttribute::ATTRIBUTE_CODE
             )
         );
 
-        if ($manualValue === '' || $productId <= 0) {
+        if ($manualValue === '') {
             return $result;
         }
 
-        /*
-         * Apunta al controller que fuerza la descarga.
-         * No utiliza directamente la URL de pub/media.
-         */
-        $downloadUrl = $this->urlBuilder->getUrl(
-            'productmanual/manual/download',
-            [
-                'id' => $productId,
-                '_secure' => $subject->getRequest()->isSecure()
-            ]
-        );
+        $manualUrl = $this->getManualUrl($manualValue);
+
+        if ($manualUrl === '') {
+            return $result;
+        }
 
         $manualHtml = sprintf(
             '<div class="product-assembly-manual info-section">'
-            . '<a class="%s" href="%s" title="%s">'
+            . '<a class="%s" href="%s" target="_blank" rel="noopener noreferrer" title="%s">'
             . '<span class="product-assembly-manual__icon" aria-hidden="true"></span>'
             . '<span class="product-assembly-manual__label" style="font-weight: 400;color: #000;">%s</span>'
             . '</a>'
             . '</div>',
             self::MANUAL_LINK_CLASS,
-            $this->escaper->escapeUrl($downloadUrl),
+            $this->escaper->escapeUrl($manualUrl),
             $this->escaper->escapeHtmlAttr(
-                (string) __('Descargar Manual de armado')
+                (string) __('Abrir Manual de armado')
             ),
             $this->escaper->escapeHtml(
                 (string) __('Manual de armado')
@@ -152,5 +138,59 @@ class AppendManualToWarranty
         );
 
         return $result . $manualHtml;
+    }
+
+    /**
+
+     * @param string $manualValue
+     * @return string
+     */
+    private function getManualUrl(string $manualValue): string
+    {
+        $manualValue = trim($manualValue);
+
+        if ($manualValue === '') {
+            return '';
+        }
+
+        if (preg_match('#^https?://#i', $manualValue)) {
+            $path = parse_url($manualValue, PHP_URL_PATH);
+
+            if (!is_string($path) || $path === '') {
+                return '';
+            }
+
+            $mediaPosition = strpos($path, '/media/');
+
+            if ($mediaPosition !== false) {
+                $manualValue = substr(
+                    $path,
+                    $mediaPosition + strlen('/media/')
+                );
+            } else {
+                $manualValue = ltrim($path, '/');
+            }
+        }
+
+        $manualValue = ltrim($manualValue, '/');
+
+        $manualValue = (string) preg_replace(
+            '#^(pub/)?media/#i',
+            '',
+            $manualValue
+        );
+
+        if ($manualValue === '') {
+            return '';
+        }
+
+        $mediaBaseUrl = rtrim(
+            $this->storeManager
+                ->getStore()
+                ->getBaseUrl(UrlInterface::URL_TYPE_MEDIA),
+            '/'
+        );
+
+        return $mediaBaseUrl . '/' . $manualValue;
     }
 }
